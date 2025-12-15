@@ -21,18 +21,20 @@ export function OnboardingForm() {
   const [inspirationFiles, setInspirationFiles] = useState<File[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
-  const uploadFile = async (file: File, path: string) => {
-    const { data, error } = await supabase.storage
-      .from('files')
-      .upload(path, file, { upsert: true });
+  const uploadFile = async (file: File, folder: 'logos' | 'inspiration') => {
+    const body = new FormData();
+    body.append('file', file);
+    body.append('folder', folder);
+
+    const { data, error } = await supabase.functions.invoke<{ publicUrl: string }>(
+      'upload-file',
+      { body }
+    );
 
     if (error) throw error;
+    if (!data?.publicUrl) throw new Error('Upload failed');
 
-    const { data: urlData } = supabase.storage
-      .from('files')
-      .getPublicUrl(data.path);
-
-    return urlData.publicUrl;
+    return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,12 +46,12 @@ export function OnboardingForm() {
     try {
       let logoUrl = null;
       if (logoFile) {
-        logoUrl = await uploadFile(logoFile, `logos/${user.id}/${logoFile.name}`);
+        logoUrl = await uploadFile(logoFile, 'logos');
       }
 
       const inspirationUrls: string[] = [];
       for (const file of inspirationFiles) {
-        const url = await uploadFile(file, `inspiration/${user.id}/${file.name}`);
+        const url = await uploadFile(file, 'inspiration');
         inspirationUrls.push(url);
       }
 
@@ -71,7 +73,11 @@ export function OnboardingForm() {
       setSubmitted(true);
       await refreshAuth();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit');
+      const message =
+        error?.message === 'Failed to fetch'
+          ? 'Could not reach the backend. Please try again.'
+          : error?.message || 'Failed to submit';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
