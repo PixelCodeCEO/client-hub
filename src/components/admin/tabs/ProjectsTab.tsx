@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-interface Project { id: string; name: string; status: string; client_id: string; profiles?: { email: string; full_name: string | null } | null; }
+interface Project { id: string; name: string; status: 'discovery' | 'design' | 'development' | 'review' | 'delivered'; client_id: string; profile?: { email: string; full_name: string | null } | null; }
 
 const statusColors: Record<string, string> = { discovery: 'bg-blue-500/20 text-blue-400', design: 'bg-purple-500/20 text-purple-400', development: 'bg-yellow-500/20 text-yellow-400', review: 'bg-orange-500/20 text-orange-400', delivered: 'bg-green-500/20 text-green-400' };
 
@@ -23,11 +23,19 @@ export function ProjectsTab() {
 
   const fetchData = async () => {
     const [projectsRes, clientsRes] = await Promise.all([
-      supabase.from('projects').select('*, profiles!projects_client_id_fkey(email, full_name)').order('created_at', { ascending: false }),
-      supabase.from('client_onboarding').select('user_id, profiles!client_onboarding_user_id_fkey(email, full_name)').eq('approval_status', 'approved'),
+      supabase.from('projects').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('user_id, email, full_name'),
     ]);
-    if (projectsRes.data) setProjects(projectsRes.data as Project[]);
-    if (clientsRes.data) setClients(clientsRes.data.map((c: any) => ({ user_id: c.user_id, email: c.profiles?.email, full_name: c.profiles?.full_name })));
+    
+    if (projectsRes.data && clientsRes.data) {
+      const profileMap = new Map(clientsRes.data.map(p => [p.user_id, p]));
+      const projectsWithProfiles = projectsRes.data.map(project => ({
+        ...project,
+        profile: profileMap.get(project.client_id) || null
+      }));
+      setProjects(projectsWithProfiles);
+      setClients(clientsRes.data.map(p => ({ user_id: p.user_id, email: p.email, full_name: p.full_name })));
+    }
     setLoading(false);
   };
 
@@ -42,7 +50,7 @@ export function ProjectsTab() {
     fetchData();
   };
 
-  const updateStatus = async (projectId: string, status: string) => {
+  const updateStatus = async (projectId: string, status: 'discovery' | 'design' | 'development' | 'review' | 'delivered') => {
     await supabase.from('projects').update({ status }).eq('id', projectId);
     toast.success('Status updated');
     fetchData();
@@ -77,12 +85,12 @@ export function ProjectsTab() {
             <div key={project.id} className="flex items-center gap-4 p-4 rounded-lg bg-secondary/50">
               <div className="flex-1">
                 <h4 className="font-medium">{project.name}</h4>
-                <p className="text-sm text-muted-foreground">{project.profiles?.full_name || project.profiles?.email}</p>
+                <p className="text-sm text-muted-foreground">{project.profile?.full_name || project.profile?.email}</p>
               </div>
-              <Select value={project.status} onValueChange={(v) => updateStatus(project.id, v)}>
+              <Select value={project.status} onValueChange={(v) => updateStatus(project.id, v as 'discovery' | 'design' | 'development' | 'review' | 'delivered')}>
                 <SelectTrigger className="w-[140px]"><Badge className={`${statusColors[project.status]} border-0 capitalize`}>{project.status}</Badge></SelectTrigger>
                 <SelectContent>
-                  {['discovery', 'design', 'development', 'review', 'delivered'].map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+                  {(['discovery', 'design', 'development', 'review', 'delivered'] as const).map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
