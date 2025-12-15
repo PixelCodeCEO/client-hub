@@ -13,7 +13,7 @@ interface Client {
   approval_status: string;
   company_name: string | null;
   project_description: string | null;
-  profiles: { email: string; full_name: string | null } | null;
+  profile?: { email: string; full_name: string | null } | null;
 }
 
 export function ClientsTab() {
@@ -21,8 +21,24 @@ export function ClientsTab() {
   const [loading, setLoading] = useState(true);
 
   const fetchClients = async () => {
-    const { data } = await supabase.from('client_onboarding').select('*, profiles!client_onboarding_user_id_fkey(email, full_name)').order('created_at', { ascending: false });
-    if (data) setClients(data as Client[]);
+    const { data: onboardingData } = await supabase
+      .from('client_onboarding')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (onboardingData) {
+      const clientsWithProfiles = await Promise.all(
+        onboardingData.map(async (client) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('user_id', client.user_id)
+            .maybeSingle();
+          return { ...client, profile };
+        })
+      );
+      setClients(clientsWithProfiles);
+    }
     setLoading(false);
   };
 
@@ -53,7 +69,7 @@ export function ClientsTab() {
             <div key={client.id} className="flex items-center gap-4 p-4 rounded-lg bg-secondary/50">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium">{client.profiles?.full_name || client.profiles?.email || 'Unknown'}</h4>
+                  <h4 className="font-medium">{client.profile?.full_name || client.profile?.email || 'Unknown'}</h4>
                   <Badge className={`${statusColors[client.approval_status]} border-0 capitalize`}>{client.approval_status}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{client.company_name || 'No company name'}</p>
@@ -64,7 +80,7 @@ export function ClientsTab() {
                   <DialogContent>
                     <DialogHeader><DialogTitle>Client Details</DialogTitle></DialogHeader>
                     <div className="space-y-4">
-                      <div><strong>Email:</strong> {client.profiles?.email}</div>
+                      <div><strong>Email:</strong> {client.profile?.email}</div>
                       <div><strong>Company:</strong> {client.company_name || 'N/A'}</div>
                       <div><strong>Description:</strong> {client.project_description || 'N/A'}</div>
                     </div>

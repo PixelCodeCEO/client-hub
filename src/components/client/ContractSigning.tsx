@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, PenTool, RotateCcw, Check } from 'lucide-react';
+import { Loader2, PenTool, RotateCcw, Check, FileText } from 'lucide-react';
 
 interface Contract {
   id: string;
@@ -12,26 +12,40 @@ interface Contract {
   content: string;
 }
 
-interface ContractSigningProps {
-  contract: Contract;
-  onSigned: () => void;
-}
-
-export function ContractSigning({ contract, onSigned }: ContractSigningProps) {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+export function ContractSigning() {
+  const { user, refreshAuth } = useAuth();
+  const [contract, setContract] = useState<Contract | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [signing, setSigning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasSignature, setHasSignature] = useState(false);
 
   useEffect(() => {
+    const fetchContract = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('contracts')
+        .select('id, title, content')
+        .eq('client_id', user.id)
+        .eq('is_signed', false)
+        .maybeSingle();
+      
+      setContract(data);
+      setLoading(false);
+    };
+
+    fetchContract();
+  }, [user]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !contract) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set up canvas
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * 2;
     canvas.height = rect.height * 2;
@@ -40,7 +54,7 @@ export function ContractSigning({ contract, onSigned }: ContractSigningProps) {
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-  }, []);
+  }, [contract]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -101,9 +115,9 @@ export function ContractSigning({ contract, onSigned }: ContractSigningProps) {
   };
 
   const handleSign = async () => {
-    if (!user || !canvasRef.current || !hasSignature) return;
+    if (!user || !canvasRef.current || !hasSignature || !contract) return;
 
-    setLoading(true);
+    setSigning(true);
 
     try {
       const signatureData = canvasRef.current.toDataURL('image/png');
@@ -121,13 +135,37 @@ export function ContractSigning({ contract, onSigned }: ContractSigningProps) {
       if (error) throw error;
 
       toast.success('Contract signed successfully!');
-      onSigned();
+      await refreshAuth();
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign contract');
     } finally {
-      setLoading(false);
+      setSigning(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!contract) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="glass max-w-md w-full mx-4">
+          <CardHeader className="text-center">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+            <CardTitle>No Contract Available</CardTitle>
+            <CardDescription>
+              Your contract is being prepared. Please check back soon or contact us for more information.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -185,9 +223,9 @@ export function ContractSigning({ contract, onSigned }: ContractSigningProps) {
             <Button 
               onClick={handleSign} 
               className="w-full gradient-primary" 
-              disabled={loading || !hasSignature}
+              disabled={signing || !hasSignature}
             >
-              {loading ? (
+              {signing ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <Check className="h-4 w-4 mr-2" />
