@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Upload, Loader2, X, Clock } from 'lucide-react';
 export function OnboardingForm() {
   const { user, approvalStatus, refreshAuth } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
   const [formData, setFormData] = useState({
     companyName: '',
     projectDescription: '',
@@ -20,6 +21,29 @@ export function OnboardingForm() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [inspirationFiles, setInspirationFiles] = useState<File[]>([]);
   const [submitted, setSubmitted] = useState(false);
+
+  // Check if form was already submitted (submitted_at exists)
+  useEffect(() => {
+    const checkSubmitted = async () => {
+      if (!user) {
+        setCheckingStatus(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('client_onboarding')
+        .select('submitted_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data?.submitted_at) {
+        setSubmitted(true);
+      }
+      setCheckingStatus(false);
+    };
+
+    checkSubmitted();
+  }, [user]);
 
   const uploadFile = async (file: File, folder: 'logos' | 'inspiration') => {
     const body = new FormData();
@@ -73,6 +97,7 @@ export function OnboardingForm() {
       setSubmitted(true);
       await refreshAuth();
     } catch (error: any) {
+      console.error('Submit error:', error);
       const message =
         error?.message === 'Failed to fetch'
           ? 'Could not reach the backend. Please try again.'
@@ -86,6 +111,14 @@ export function OnboardingForm() {
   const removeInspirationFile = (index: number) => {
     setInspirationFiles(files => files.filter((_, i) => i !== index));
   };
+
+  if (checkingStatus) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (approvalStatus === 'pending' && submitted) {
     return (

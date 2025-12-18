@@ -4,17 +4,22 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, PenTool, RotateCcw, Check, FileText } from 'lucide-react';
+import { Loader2, PenTool, RotateCcw, Check, FileText, CheckCircle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Contract {
   id: string;
   title: string;
   content: string;
+  is_signed: boolean;
+  signed_at: string | null;
+  signature_data: string | null;
 }
 
 export function ContractSigning() {
   const { user, refreshAuth } = useAuth();
   const [contract, setContract] = useState<Contract | null>(null);
+  const [signedContract, setSignedContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -25,14 +30,34 @@ export function ContractSigning() {
     const fetchContract = async () => {
       if (!user) return;
       
-      const { data } = await supabase
+      // Check for unsigned contract first
+      const { data: unsignedContract } = await supabase
         .from('contracts')
-        .select('id, title, content')
+        .select('id, title, content, is_signed, signed_at, signature_data')
         .eq('client_id', user.id)
         .eq('is_signed', false)
         .maybeSingle();
       
-      setContract(data);
+      if (unsignedContract) {
+        setContract(unsignedContract);
+        setLoading(false);
+        return;
+      }
+
+      // Check for signed contract
+      const { data: signed } = await supabase
+        .from('contracts')
+        .select('id, title, content, is_signed, signed_at, signature_data')
+        .eq('client_id', user.id)
+        .eq('is_signed', true)
+        .order('signed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (signed) {
+        setSignedContract(signed);
+      }
+
       setLoading(false);
     };
 
@@ -151,6 +176,54 @@ export function ContractSigning() {
     );
   }
 
+  // Show signed contract view
+  if (signedContract && !contract) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="max-w-4xl mx-auto space-y-6 animate-slide-up">
+          <Card className="glass">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6 text-green-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">{signedContract.title}</CardTitle>
+                  <CardDescription>
+                    Signed on {signedContract.signed_at ? new Date(signedContract.signed_at).toLocaleDateString() : 'Unknown'}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ScrollArea className="h-[400px]">
+                  <div 
+                    className="bg-secondary/50 rounded-lg p-6 whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: signedContract.content }}
+                  />
+                </ScrollArea>
+              </div>
+
+              {signedContract.signature_data && (
+                <div className="mt-6">
+                  <p className="text-sm text-muted-foreground mb-2">Your Signature:</p>
+                  <div className="bg-white rounded-lg p-2 inline-block">
+                    <img 
+                      src={signedContract.signature_data} 
+                      alt="Your Signature" 
+                      className="max-h-[80px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (!contract) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -177,10 +250,12 @@ export function ContractSigning() {
           </CardHeader>
           <CardContent>
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <div 
-                className="bg-secondary/50 rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: contract.content }}
-              />
+              <ScrollArea className="h-[400px]">
+                <div 
+                  className="bg-secondary/50 rounded-lg p-6 whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: contract.content }}
+                />
+              </ScrollArea>
             </div>
           </CardContent>
         </Card>

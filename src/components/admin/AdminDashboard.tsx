@@ -4,11 +4,10 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { LogOut, Users, Folder, FileText, MessageSquare, Receipt, Check, X, Plus } from 'lucide-react';
+import { LogOut, Users, Folder, FileText } from 'lucide-react';
 import { ClientsTab } from './tabs/ClientsTab';
 import { ProjectsTab } from './tabs/ProjectsTab';
+import { ContractsTab } from './tabs/ContractsTab';
 
 export function AdminDashboard() {
   const { signOut } = useAuth();
@@ -44,9 +43,11 @@ export function AdminDashboard() {
           <TabsList className="glass">
             <TabsTrigger value="clients"><Users className="h-4 w-4 mr-2" />Clients</TabsTrigger>
             <TabsTrigger value="projects"><Folder className="h-4 w-4 mr-2" />Projects</TabsTrigger>
+            <TabsTrigger value="contracts"><FileText className="h-4 w-4 mr-2" />Contracts</TabsTrigger>
           </TabsList>
           <TabsContent value="clients"><ClientsTab /></TabsContent>
           <TabsContent value="projects"><ProjectsTab /></TabsContent>
+          <TabsContent value="contracts"><ContractsTab /></TabsContent>
         </Tabs>
       </main>
     </div>
