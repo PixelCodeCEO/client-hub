@@ -69,6 +69,16 @@ export function ClientsTab() {
 
   const approveClient = async (userId: string) => {
     await supabase.from('client_onboarding').update({ approval_status: 'approved', approved_at: new Date().toISOString() }).eq('user_id', userId);
+    
+    // Send email notification
+    try {
+      await supabase.functions.invoke('send-notification', {
+        body: { type: 'client_approved', clientId: userId }
+      });
+    } catch (e) {
+      console.log('Email notification failed');
+    }
+    
     toast.success('Client approved!');
     fetchClients();
   };
@@ -144,6 +154,15 @@ By signing below, both parties agree to the terms outlined in this agreement.`
       });
 
       if (error) throw error;
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: { type: 'contract_sent', clientId: selectedClient.user_id }
+        });
+      } catch (e) {
+        console.log('Email notification failed');
+      }
 
       toast.success('Contract sent to client!');
       setContractDialogOpen(false);
