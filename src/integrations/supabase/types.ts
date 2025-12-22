@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           id: string
           inspiration_images: string[] | null
+          internal_notes: string | null
           logo_url: string | null
           project_description: string | null
           submitted_at: string | null
@@ -37,6 +38,7 @@ export type Database = {
           created_at?: string
           id?: string
           inspiration_images?: string[] | null
+          internal_notes?: string | null
           logo_url?: string | null
           project_description?: string | null
           submitted_at?: string | null
@@ -51,6 +53,7 @@ export type Database = {
           created_at?: string
           id?: string
           inspiration_images?: string[] | null
+          internal_notes?: string | null
           logo_url?: string | null
           project_description?: string | null
           submitted_at?: string | null
@@ -253,6 +256,54 @@ export type Database = {
           },
         ]
       }
+      milestone_approvals: {
+        Row: {
+          approval_type: string
+          approved_at: string
+          approved_by: string
+          created_at: string
+          id: string
+          milestone_id: string | null
+          notes: string | null
+          project_id: string
+        }
+        Insert: {
+          approval_type: string
+          approved_at?: string
+          approved_by: string
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          notes?: string | null
+          project_id: string
+        }
+        Update: {
+          approval_type?: string
+          approved_at?: string
+          approved_by?: string
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          notes?: string | null
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_approvals_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_approvals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestones: {
         Row: {
           completed_at: string | null
@@ -341,28 +392,46 @@ export type Database = {
           client_id: string
           created_at: string
           description: string | null
+          health_status: Database["public"]["Enums"]["health_status"]
           id: string
+          internal_notes: string | null
+          launch_date: string | null
+          launch_notes: string | null
           name: string
           status: Database["public"]["Enums"]["project_status"]
+          support_plan: Database["public"]["Enums"]["support_plan"]
           updated_at: string
+          waiting_on: Database["public"]["Enums"]["waiting_on"]
         }
         Insert: {
           client_id: string
           created_at?: string
           description?: string | null
+          health_status?: Database["public"]["Enums"]["health_status"]
           id?: string
+          internal_notes?: string | null
+          launch_date?: string | null
+          launch_notes?: string | null
           name: string
           status?: Database["public"]["Enums"]["project_status"]
+          support_plan?: Database["public"]["Enums"]["support_plan"]
           updated_at?: string
+          waiting_on?: Database["public"]["Enums"]["waiting_on"]
         }
         Update: {
           client_id?: string
           created_at?: string
           description?: string | null
+          health_status?: Database["public"]["Enums"]["health_status"]
           id?: string
+          internal_notes?: string | null
+          launch_date?: string | null
+          launch_notes?: string | null
           name?: string
           status?: Database["public"]["Enums"]["project_status"]
+          support_plan?: Database["public"]["Enums"]["support_plan"]
           updated_at?: string
+          waiting_on?: Database["public"]["Enums"]["waiting_on"]
         }
         Relationships: []
       }
@@ -405,6 +474,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "client"
       approval_status: "pending" | "approved" | "rejected"
+      health_status: "on_track" | "needs_attention" | "blocked"
       invoice_status: "pending" | "paid" | "overdue"
       project_status:
         | "discovery"
@@ -412,6 +482,8 @@ export type Database = {
         | "development"
         | "review"
         | "delivered"
+      support_plan: "none" | "basic" | "priority"
+      waiting_on: "client" | "payment" | "assets" | "approval" | "us" | "none"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -541,6 +613,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "client"],
       approval_status: ["pending", "approved", "rejected"],
+      health_status: ["on_track", "needs_attention", "blocked"],
       invoice_status: ["pending", "paid", "overdue"],
       project_status: [
         "discovery",
@@ -549,6 +622,8 @@ export const Constants = {
         "review",
         "delivered",
       ],
+      support_plan: ["none", "basic", "priority"],
+      waiting_on: ["client", "payment", "assets", "approval", "us", "none"],
     },
   },
 } as const

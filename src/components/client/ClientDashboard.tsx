@@ -8,6 +8,7 @@ import { ProjectTimeline } from './ProjectTimeline';
 import { DeliverablesList } from './DeliverablesList';
 import { MessagesPanel } from './MessagesPanel';
 import { InvoicesList } from './InvoicesList';
+import { MilestoneApprovals } from './MilestoneApprovals';
 import { Button } from '@/components/ui/button';
 import { LogOut, Folder, FileText, MessageSquare, Receipt } from 'lucide-react';
 
@@ -143,6 +144,8 @@ export function ClientDashboard() {
                   <ProjectTimeline projectId={project.id} currentStatus={project.status} />
                 </CardContent>
               </Card>
+
+              <MilestoneApprovals projectId={project.id} />
 
               {project.description && (
                 <Card className="glass">
