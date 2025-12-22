@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Check, X, Eye, FileText, Send } from 'lucide-react';
+import { Check, X, Eye, FileText, Send, StickyNote } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ interface Client {
   logo_url: string | null;
   inspiration_images: string[] | null;
   submitted_at: string | null;
+  internal_notes: string | null;
   profile?: { email: string; full_name: string | null } | null;
   has_contract?: boolean;
   has_signed_contract?: boolean;
@@ -33,6 +34,10 @@ export function ClientsTab() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [contractForm, setContractForm] = useState({ title: '', content: '' });
   const [sending, setSending] = useState(false);
+  const [notesClient, setNotesClient] = useState<Client | null>(null);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [editNotes, setEditNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
 
   const fetchClients = async () => {
     const { data: onboardingData } = await supabase
@@ -177,6 +182,22 @@ By signing below, both parties agree to the terms outlined in this agreement.`
     }
   };
 
+  const openNotesDialog = (client: Client) => {
+    setNotesClient(client);
+    setEditNotes(client.internal_notes || '');
+    setNotesDialogOpen(true);
+  };
+
+  const saveNotes = async () => {
+    if (!notesClient) return;
+    setSavingNotes(true);
+    await supabase.from('client_onboarding').update({ internal_notes: editNotes }).eq('id', notesClient.id);
+    toast.success('Notes saved');
+    setSavingNotes(false);
+    setNotesDialogOpen(false);
+    fetchClients();
+  };
+
   const statusColors: Record<string, string> = { 
     pending: 'bg-yellow-500/20 text-yellow-400', 
     approved: 'bg-green-500/20 text-green-400', 
@@ -197,6 +218,7 @@ By signing below, both parties agree to the terms outlined in this agreement.`
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h4 className="font-medium">{client.profile?.full_name || client.profile?.email || 'Unknown'}</h4>
                     <Badge className={`${statusColors[client.approval_status]} border-0 capitalize`}>{client.approval_status}</Badge>
+                    {client.internal_notes && <StickyNote className="h-3 w-3 text-muted-foreground" />}
                     {client.approval_status === 'approved' && (
                       <>
                         {client.has_signed_contract && (
@@ -214,6 +236,9 @@ By signing below, both parties agree to the terms outlined in this agreement.`
                   <p className="text-sm text-muted-foreground">{client.company_name || 'No company name'}</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" variant="ghost" onClick={() => openNotesDialog(client)} title="Internal Notes">
+                    <StickyNote className="h-4 w-4" />
+                  </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button size="sm" variant="secondary"><Eye className="h-4 w-4" /></Button>
@@ -325,6 +350,35 @@ By signing below, both parties agree to the terms outlined in this agreement.`
             <Button variant="outline" onClick={() => setContractDialogOpen(false)}>Cancel</Button>
             <Button onClick={sendContract} disabled={sending}>
               {sending ? 'Sending...' : 'Send Contract'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Internal Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Internal Notes - {notesClient?.profile?.full_name || notesClient?.company_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              These notes are private and only visible to admins.
+            </p>
+            <Textarea
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              placeholder="Add private notes about this client... (communication preferences, pricing flexibility, red flags, negotiation history, etc.)"
+              rows={8}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveNotes} disabled={savingNotes}>
+              {savingNotes ? 'Saving...' : 'Save Notes'}
             </Button>
           </DialogFooter>
         </DialogContent>
