@@ -98,21 +98,78 @@ export function ClientsTab() {
     setSelectedClient(client);
     setContractForm({ 
       title: `Project Agreement - ${client.company_name || 'Client'}`,
-      content: `PROJECT AGREEMENT
+      content: `KEYLINE STUDIOS SERVICE AGREEMENT
 
-This agreement is entered into between the Studio and ${client.company_name || 'the Client'}.
+This agreement is entered into between Keyline Studios ("the Studio") and ${client.company_name || 'the Client'} ("the Client").
 
-SCOPE OF WORK:
-${client.project_description || 'To be defined'}
+1. SCOPE OF WORK
 
-TERMS AND CONDITIONS:
-1. The Studio agrees to provide design services as outlined above.
-2. The Client agrees to provide timely feedback and approvals.
-3. Payment terms will be defined in separate invoices.
-4. Both parties agree to maintain confidentiality.
+The Studio will provide design and development services as outlined in the proposal:
 
-ACCEPTANCE:
-By signing below, both parties agree to the terms outlined in this agreement.`
+- Website pages/screens
+- SwiftUI iOS app screens
+- Backend integration (if applicable)
+- Figma design files (optional add-on)
+- Other deliverables as specified
+
+Preview/staging versions are for review only and cannot be used in production. Work not included: hosting beyond initial setup, post-launch maintenance, App Store submission (unless purchased).
+
+2. PAYMENT TERMS
+
+- Deposit: 40% due before work begins
+- Milestone Payment(s): 30% due upon approval of initial designs or prototype
+- Final Payment: 30% due before delivery of final files or production-ready assets
+- Preview versions (Website: on our subdomain, password-protected; App: via TestFlight) are for review only and will be removed if final payment is not received or after final delivery
+- Add-ons are only delivered after payment for that add-on clears
+- Late payments may result in paused work
+- All invoices via Stripe
+
+3. INTELLECTUAL PROPERTY & BACKEND OWNERSHIP
+
+All work, designs, source files, and assets remain the property of the Studio until full payment is received. Figma files, if purchased, are delivered only after payment.
+
+Upon full payment, Client receives rights to use final deliverables. The Studio uses Supabase for the backend on websites. After payment is received, the Studio will transfer ownership of the Supabase project to the Client. The Client must have a Supabase account registered with the same email used for the transfer. Once the project backend is transferred, the Studio will no longer have access unless otherwise agreed.
+
+If the Client purchases an optional maintenance plan, the Studio may retain ownership of the Supabase project for the duration of the plan to provide updates, backups, and support. During this time, the Client will be added as an Admin or Developer, allowing them to view and edit content. Full ownership transfer can occur upon termination of the maintenance plan or via a one-time buyout fee.
+
+4. DELIVERY
+
+- Websites hosted on Studio-controlled server/subdomain until final payment; removed if unpaid
+- iOS apps delivered via TestFlight until final payment; access revoked if unpaid
+- Final source files and production-ready assets delivered only after full payment clears
+
+5. REVISIONS
+
+- The number of included revisions per milestone will be specified in the proposal. Additional revisions billed separately.
+
+6. CANCELLATION / REFUNDS
+
+- Deposit is non-refundable
+- If Client cancels mid-project, the Studio retains deposit and invoices for completed work
+
+7. CONFIDENTIALITY & PORTFOLIO
+
+- Both parties agree to maintain confidentiality. The Studio may showcase final work in portfolio unless a signed NDA is requested.
+
+8. LIMITATION OF LIABILITY
+
+- The Studio is not liable for indirect, incidental, or consequential damages. Studio is not responsible for delays caused by Client's failure to provide assets or approvals.
+
+9. GOVERNING LAW & DISPUTE RESOLUTION
+
+- This Agreement is governed by the laws in the State of Florida. Parties agree to attempt mediation before legal action.
+
+10. MAINTENANCE & SUPPORT (Optional Add-On)
+
+- Client may purchase a monthly maintenance plan for an agreed fee (e.g., $300/month)
+- Services include bug fixes, minor updates, CMS/database maintenance, backups, and email support (up to a specified number of hours per month)
+- Services beyond the scope or time limit will be billed separately
+- Monthly payments are due in advance. If payment is not received, maintenance services may be suspended until payment is cleared
+- Either party may terminate the maintenance plan with 30 days' written notice
+
+11. ACCEPTANCE
+
+By signing below and using our services, both parties agree to the terms outlined in this Agreement.`
     });
     setContractDialogOpen(true);
   };

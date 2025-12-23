@@ -109,8 +109,8 @@ export default function Auth() {
       
       <Card className="w-full max-w-md relative glass animate-scale-in">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-3xl font-bold gradient-text">Client Portal</CardTitle>
-          <CardDescription>Access your project dashboard</CardDescription>
+          <CardTitle className="text-3xl font-bold gradient-text">Keyline Studios</CardTitle>
+          <CardDescription>Client Portal - Access your project dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
