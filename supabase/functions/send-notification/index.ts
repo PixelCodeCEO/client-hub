@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'contract_sent' | 'invoice_created' | 'deliverable_sent' | 'client_approved' | 'message_received';
+  type: 'contract_sent' | 'invoice_created' | 'deliverable_sent' | 'client_approved' | 'message_received' | 'project_updated' | 'project_completed';
   clientId: string;
   data?: Record<string, string>;
 }
@@ -110,6 +110,32 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Please log in to your client portal to view and respond.</p>
           <br>
           <p>Best regards,<br>Stackline Studios</p>
+        `;
+        break;
+
+      case 'project_updated':
+        subject = 'Project Update - Stackline Studios';
+        html = `
+          <h1>Hello ${clientName}!</h1>
+          <p>Your project has been updated!</p>
+          <p><strong>New Status:</strong> ${data?.status || 'Updated'}</p>
+          <p>Please log in to your client portal to see the latest progress.</p>
+          <br>
+          <p>Best regards,<br>Stackline Studios</p>
+        `;
+        break;
+
+      case 'project_completed':
+        subject = 'Your Project is Complete! 🎉 - Stackline Studios';
+        html = `
+          <h1>Congratulations ${clientName}!</h1>
+          <p>We're thrilled to let you know that your project is now complete!</p>
+          <p>Thank you for choosing Stackline Studios. It has been a pleasure working with you.</p>
+          <p>You can access all your final deliverables in your client portal.</p>
+          <br>
+          <p>If you need any ongoing support or have future projects in mind, we'd love to hear from you!</p>
+          <br>
+          <p>With gratitude,<br>The Stackline Studios Team</p>
         `;
         break;
 

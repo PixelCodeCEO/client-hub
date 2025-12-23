@@ -99,7 +99,7 @@ export function ClientDashboard() {
                 <Folder className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-semibold text-lg">{project.name}</h1>
+                <h1 className="font-semibold text-lg text-foreground">{project.name}</h1>
                 <Badge className={`${statusColors[project.status]} border-0 capitalize`}>
                   {project.status}
                 </Badge>
