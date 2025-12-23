@@ -105,7 +105,7 @@ export function ClientDashboard() {
                 </Badge>
               </div>
             </div>
-            <Button variant="ghost" onClick={signOut}>
+            <Button variant="ghost" onClick={signOut} className="text-foreground hover:text-foreground">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
