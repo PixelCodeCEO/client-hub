@@ -92,6 +92,18 @@ export function MessagesTab() {
       sender_id: user.id, 
       content: newMessage.trim() 
     });
+
+    // Send email notification to client
+    if (selectedProjectData?.client_id) {
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: { type: 'message_received', clientId: selectedProjectData.client_id }
+        });
+      } catch (error) {
+        console.error('Failed to send message notification:', error);
+      }
+    }
+
     setNewMessage('');
     setSending(false);
   };

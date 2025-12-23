@@ -116,9 +116,28 @@ export function ProjectsTab() {
     fetchData();
   };
 
-  const updateStatus = async (projectId: string, status: ProjectStatus) => {
+  const updateStatus = async (projectId: string, status: ProjectStatus, clientId: string) => {
+    const previousProject = projects.find(p => p.id === projectId);
     await supabase.from('projects').update({ status }).eq('id', projectId);
     toast.success('Status updated');
+
+    // Send notification based on status change
+    try {
+      if (status === 'delivered') {
+        // Send project completed email
+        await supabase.functions.invoke('send-notification', {
+          body: { type: 'project_completed', clientId }
+        });
+      } else if (previousProject?.status !== status) {
+        // Send project update email for status changes
+        await supabase.functions.invoke('send-notification', {
+          body: { type: 'project_updated', clientId, data: { status } }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send status notification:', error);
+    }
+
     fetchData();
   };
 
@@ -234,7 +253,7 @@ export function ProjectsTab() {
                         </Button>
                       )}
 
-                      <Select value={project.status} onValueChange={(v) => updateStatus(project.id, v as ProjectStatus)}>
+                      <Select value={project.status} onValueChange={(v) => updateStatus(project.id, v as ProjectStatus, project.client_id)}>
                         <SelectTrigger className="w-[130px]">
                           <Badge className={`${statusColors[project.status]} border-0 capitalize`}>{project.status}</Badge>
                         </SelectTrigger>

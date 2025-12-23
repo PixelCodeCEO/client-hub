@@ -150,8 +150,8 @@ export function OnboardingForm() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
             <Clock className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Account Pending Approval</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-2xl text-foreground">Account Pending Approval</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
             Tell us about your project so we can prepare the best experience for you.
           </CardDescription>
         </CardHeader>
