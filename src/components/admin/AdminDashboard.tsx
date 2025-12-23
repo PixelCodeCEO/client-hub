@@ -32,7 +32,7 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/50 backdrop-blur-xl bg-card/90 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Stackline Studios</h1>
+          <h1 className="text-xl font-bold text-foreground">Keyline Studios</h1>
           <Button variant="outline" onClick={signOut} className="text-foreground border-border hover:bg-secondary">
             <LogOut className="h-4 w-4 mr-2" />Sign Out
           </Button>

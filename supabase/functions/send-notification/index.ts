@@ -49,18 +49,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     switch (type) {
       case 'contract_sent':
-        subject = 'Your Contract is Ready - Stackline Studios';
+        subject = 'Your Contract is Ready - Keyline Studios';
         html = `
           <h1>Hello ${clientName}!</h1>
           <p>Your contract is ready for review and signature.</p>
           <p>Please log in to your client portal to review and sign the contract.</p>
           <br>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'invoice_created':
-        subject = 'New Invoice - Stackline Studios';
+        subject = 'New Invoice - Keyline Studios';
         html = `
           <h1>Hello ${clientName}!</h1>
           <p>A new invoice has been created for you:</p>
@@ -68,24 +68,24 @@ const handler = async (req: Request): Promise<Response> => {
           <p><strong>Description:</strong> ${data?.description || 'N/A'}</p>
           <p>Please log in to your client portal to view and pay the invoice.</p>
           <br>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'deliverable_sent':
-        subject = 'New Deliverable Ready - Stackline Studios';
+        subject = 'New Deliverable Ready - Keyline Studios';
         html = `
           <h1>Hello ${clientName}!</h1>
           <p>A new deliverable has been shared with you:</p>
           <p><strong>${data?.title || 'New File'}</strong></p>
           <p>Please log in to your client portal to download or view it.</p>
           <br>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'client_approved':
-        subject = 'You\'re Approved! - Stackline Studios';
+        subject = 'You\'re Approved! - Keyline Studios';
         html = `
           <h1>Welcome ${clientName}!</h1>
           <p>Great news! Your application has been approved.</p>
@@ -98,44 +98,44 @@ const handler = async (req: Request): Promise<Response> => {
           </ul>
           <br>
           <p>We're excited to work with you!</p>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'message_received':
-        subject = 'New Message - Stackline Studios';
+        subject = 'New Message - Keyline Studios';
         html = `
           <h1>Hello ${clientName}!</h1>
-          <p>You have received a new message from Stackline Studios.</p>
+          <p>You have received a new message from Keyline Studios.</p>
           <p>Please log in to your client portal to view and respond.</p>
           <br>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'project_updated':
-        subject = 'Project Update - Stackline Studios';
+        subject = 'Project Update - Keyline Studios';
         html = `
           <h1>Hello ${clientName}!</h1>
           <p>Your project has been updated!</p>
           <p><strong>New Status:</strong> ${data?.status || 'Updated'}</p>
           <p>Please log in to your client portal to see the latest progress.</p>
           <br>
-          <p>Best regards,<br>Stackline Studios</p>
+          <p>Best regards,<br>Keyline Studios</p>
         `;
         break;
 
       case 'project_completed':
-        subject = 'Your Project is Complete! 🎉 - Stackline Studios';
+        subject = 'Your Project is Complete! 🎉 - Keyline Studios';
         html = `
           <h1>Congratulations ${clientName}!</h1>
           <p>We're thrilled to let you know that your project is now complete!</p>
-          <p>Thank you for choosing Stackline Studios. It has been a pleasure working with you.</p>
+          <p>Thank you for choosing Keyline Studios. It has been a pleasure working with you.</p>
           <p>You can access all your final deliverables in your client portal.</p>
           <br>
           <p>If you need any ongoing support or have future projects in mind, we'd love to hear from you!</p>
           <br>
-          <p>With gratitude,<br>The Stackline Studios Team</p>
+          <p>With gratitude,<br>The Keyline Studios Team</p>
         `;
         break;
 
@@ -154,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "Stackline Studios <onboarding@resend.dev>",
+        from: "Keyline Studios <hello@keylinestudios.com>",
         to: [profile.email],
         subject,
         html,
